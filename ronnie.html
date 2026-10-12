@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FutFit Coach Pro | Entrenador Completo en Casa</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkBg: '#0b0f19',
+                        cardBg: '#131d31',
+                        accentGreen: '#10b981',
+                        accentDark: '#1e293b'
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome para iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-darkBg text-slate-100 min-h-screen font-sans selection:bg-accentGreen selection:text-black">
+
+    <!-- MODAL DE ONBOARDING / PERFIL INICIAL -->
+    <div id="onboardingModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 hidden">
+        <div class="bg-cardBg border border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative">
+            <div class="text-center mb-6">
+                <span class="bg-emerald-500/10 text-accentGreen text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider">Configuración Inicial</span>
+                <h2 class="text-2xl font-bold mt-2">Bienvenido a FutFit Coach</h2>
+                <p class="text-slate-400 text-sm mt-1">Ingresa tus datos para calibrar tu plan en casa sin equipamiento.</p>
+            </div>
+            
+            <form id="profileForm" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Tu Nombre</label>
+                    <input type="text" id="fieldName" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-accentGreen" placeholder="Ingresa tu nombre">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Peso (kg)</label>
+                        <input type="number" id="fieldWeight" step="0.1" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-accentGreen" placeholder="Ingresa tu peso">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Estatura (cm)</label>
+                        <input type="number" id="fieldHeight" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-accentGreen" placeholder="Ingresa tu estatura">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Posición en el Campo</label>
+                    <select id="fieldPosition" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-accentGreen">
+                        <option value="" disabled selected>Selecciona tu posición</option>
+                        <option value="Extremo / Delantero">Extremo / Delantero (Velocidad y 1v1)</option>
+                        <option value="Mediocentro / Volante">Mediocentro / Volante (Transiciones y Resistencia)</option>
+                        <option value="Lateral / Carrilero">Lateral / Carrilero (Recorridos e Intensidad)</option>
+                        <option value="Defensa Central">Defensa Central (Potencia y Reactividad)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Nivel de Rendimiento</label>
+                    <select id="fieldLevel" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-accentGreen">
+                        <option value="" disabled selected>Selecciona tu nivel</option>
+                        <option value="Iniciación">Iniciación / Recreativo</option>
+                        <option value="Intermedio">Intermedio / Amateur Competitivo</option>
+                        <option value="Alto Rendimiento">Alto Rendimiento / Élite (Exigencia Máxima)</option>
+                    </select>
+                </div>
+                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-black font-bold py-3 rounded-xl transition duration-200 mt-2 shadow-lg shadow-emerald-600/20">
+                    Guardar Perfil e Iniciar
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- CONTENEDOR PRINCIPAL -->
+    <div class="max-w-4xl mx-auto px-4 py-8">
+        
+        <!-- HEADER -->
+        <header class="bg-cardBg border border-slate-800 p-6 rounded-2xl mb-8 shadow-xl space-y-6">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-accentGreen animate-pulse"></span>
+                        <span class="text-xs uppercase font-bold tracking-widest text-accentGreen">Entrenamiento de Élite sin Equipamiento</span>
+                    </div>
+                    <h1 id="welcomeTitle" class="text-2xl md:text-3xl font-extrabold mt-1">Hola, Atleta</h1>
+                    <p id="userSubtitle" class="text-slate-400 text-sm mt-0.5">Cargando métricas...</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button onclick="resetWeek()" class="bg-emerald-500/10 hover:bg-emerald-500/20 text-accentGreen border border-emerald-500/30 text-xs font-semibold px-4 py-2.5 rounded-xl transition flex items-center gap-2">
+                        <i class="fa-solid fa-rotate-right"></i> Reiniciar Semana
+                    </button>
+                    <button onclick="openSettings()" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-semibold px-4 py-2.5 rounded-xl transition flex items-center gap-2">
+                        <i class="fa-solid fa-gear"></i> Perfil
+                    </button>
+                    <button onclick="resetData()" title="Borrar todo" class="bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs font-semibold px-3 py-2.5 rounded-xl transition">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- BARRA DE PROGRESO GENERAL DE LA SEMANA -->
+            <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800">
+                <div class="flex justify-between items-center mb-1.5">
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-300">
+                        <i class="fa-solid fa-trophy text-accentGreen mr-1.5"></i> Progreso General del Microciclo
+                    </span>
+                    <span id="overallPercentage" class="text-xs font-bold text-accentGreen">0% Completado</span>
+                </div>
+                <div class="w-full h-3 bg-slate-950 rounded-full overflow-hidden border border-slate-800">
+                    <div id="overallProgressBar" class="h-full bg-emerald-500 transition-all duration-500" style="width: 0%"></div>
+                </div>
+            </div>
+        </header>
+
+        <!-- NAVEGACIÓN DE DÍAS -->
+        <div class="mb-6">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3"><i class="fa-solid fa-calendar-week mr-1.5 text-accentGreen"></i> Microciclo Semanal (Días de Entrenamiento)</h3>
+            <div id="daysNav" class="grid grid-cols-4 sm:grid-cols-7 gap-2">
+                <!-- Inyectado por JS -->
+            </div>
+        </div>
+
+        <!-- PANEL DE ENTRENAMIENTO DEL DÍA -->
+        <main class="bg-cardBg border border-slate-800 rounded-2xl p-6 shadow-xl mb-12">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-800 pb-4 mb-6 gap-2">
+                <div>
+                    <span id="dayBadge" class="text-xs font-semibold uppercase bg-emerald-500/10 text-accentGreen px-3 py-1 rounded-lg">Día 1</span>
+                    <h2 id="dayTitle" class="text-xl font-bold mt-2">Cargando rutina...</h2>
+                </div>
+                <div class="text-right">
+                    <span id="completionCounter" class="text-xs text-slate-400 font-medium">0/0 completados</span>
+                    <div class="w-32 h-2 bg-slate-900 rounded-full mt-1 overflow-hidden border border-slate-800">
+                        <div id="progressBar" class="h-full bg-accentGreen transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LISTA DE EJERCICIOS -->
+            <div id="exerciseList" class="space-y-4">
+                <!-- Ejercicios inyectados por JS -->
+            </div>
+        </main>
+        
+        <!-- FOOTER INFO -->
+        <footer class="text-center text-xs text-slate-500 pb-8">
+            FutFit Coach Pro &bull; Guía Completa de Ejercicios Explicados en Casa
+        </footer>
+    </div>
+
+    <!-- SCRIPT DE LÓGICA -->
+    <script>
+        // Banco AMPLIADO X10 de ejercicios explicados al detalle (Sin equipamiento / En Casa)
+        const exercisePools = {
+            aceleracion: [
+                { 
+                    name: "Salida Reaktiva desde Piso en Prono (Boca Abajo)", 
+                    desc: "Recuéstate boca abajo. A la señal o cuenta de 3, empújate fuertemente con los brazos, lleva un pie adelante rápido bajo tu centro de gravedad y realiza una aceleración explosiva de 5 metros.", 
+                    cat: "Aceleración 0-5m", 
+                    howTo: "CÓMO FUNCIONA: Entrena la potencia de empuje inicial y el tiempo de reacción desde una posición de apoyo nulo." 
+                },
+                { 
+                    name: "Sentadilla Búlgara Pliométrica (Apoyo en Sofá o Silla)", 
+                    desc: "Coloca el empeine de un pie sobre una silla o sofá detrás de ti. Baja la cadera en sentadilla unipodal y despega explosivamente con la pierna delantera dando un pequeño salto.", 
+                    cat: "Potencia Unipodal", 
+                    howTo: "CÓMO FUNCIONA: 4 series x 8 reps por pierna. Construye la fuerza explosiva necesaria para dar el primer paso al arrancar." 
+                },
+                { 
+                    name: "Skipping Estático a Máxima Frecuencia + Salida de 3 Metros", 
+                    desc: "Eleva rodillas a la altura de la cadera a máxima velocidad en el sitio durante 5 segundos. Sin frenar, inclina el tronco hacia adelante y sale en sprint explosivo 3 metros.", 
+                    cat: "Transición de Potencia", 
+                    howTo: "CÓMO FUNCIONA: Simula el cambio de frecuencia de pies a zancada de aceleración en un contragolpe." 
+                },
+                { 
+                    name: "Salto Pliométrico Horizontal (Broad Jump) a Recepción Controlada", 
+                    desc: "Pies al ancho de hombros, flexiona rodillas, lleva brazos atrás y salta lo más lejos posible hacia adelante. Caer suavemente flexionando rodillas a 90°.", 
+                    cat: "Pliometría Horizontal", 
+                    howTo: "CÓMO FUNCIONA: 4 series x 6 saltos. Mejora la capacidad de tus cuadriceps y glúteos para proyectar tu cuerpo hacia adelante." 
+                },
+                { 
+                    name: "Paso de Arrastre Lateral Pliométrico con Freno de Muro", 
+                    desc: "Ponte de lado a 3 metros de una pared. Haz 2 desplazamientos laterales rápidos y empuja la pared con ambas manos para rebotar hacia el otro lado.", 
+                    cat: "Salida Lateral", 
+                    howTo: "CÓMO FUNCIONA: Desarrolla los aductores y abductores para acelerar en cambios de dirección defensivos." 
+                },
+                { 
+                    name: "Salidas desde Posición Arrodillada (Kneeling Sprint Start)", 
+                    desc: "Ponte de rodillas en el suelo. Inclinando el tronco hacia adelante, lanza la pierna dominante al frente y acelera 4 metros antes de levantarte del todo.", 
+                    cat: "Aceleración Baja", 
+                    howTo: "CÓMO FUNCIONA: Obliga a mantener el centro de gravedad bajo durante los primeros tres pasos, clave en aceleración real." 
+                },
+                { 
+                    name: "Saltos Unipodales Continuos en 'Z' (Single Leg Bounds)", 
+                    desc: "Sobre una sola pierna, salta en diagonal hacia adelante (derecha, izquierda, derecha) manteniendo el equilibrio 1 segundo al aterrizar en cada punto.", 
+                    cat: "Estabilidad y Potencia", 
+                    howTo: "CÓMO FUNCIONA: 3 series x 6 saltos por pierna. Fortalece tobillo y rodilla para aguantar arrancadas bruscas." 
+                },
+                { 
+                    name: "Inclinación de Gravedad con Caída Reactiva (Fall and Sprint)", 
+                    desc: "Ponte de pie recto. Inclínate hacia adelante manteniendo el cuerpo rígido sin doblar la cadera hasta que 'caigas'. En el último milisegundo pon el pie y acelera.", 
+                    cat: "Biomecánica de Arranque", 
+                    howTo: "CÓMO FUNCIONA: Enseña a usar el peso corporal y la gravedad para acelerar sin desperdiciar energía." 
+                },
+                { 
+                    name: "Zancadas Explosivas Alternas con Salto en el Sitio", 
+                    desc: "En posición de zancada, salta verticalmente intercambiando las piernas en el aire para caer en zancada con el pie opuesto.", 
+                    cat: "Pliometría Dinámica", 
+                    howTo: "CÓMO FUNCIONA: 4 series de 10 saltos totales. Desarrolla la fuerza reactiva en la zancada de alta velocidad." 
+                },
+                { 
+                    name: "Arrancada en Reversa a 180° (Spin & Go)", 
+                    desc: "Ponte de espaldas a la dirección de carrera. A la señal, gira la cadera 180° en un solo movimiento y acelera hacia adelante 4 metros.", 
+                    cat: "Giro y Aceleración", 
+                    howTo: "CÓMO FUNCIONA: Recrea la acción de un atacante o defensa que se gira a perseguir un balón a las espaldas." 
+                }
+            ],
+            topSpeed: [
+                { 
+                    name: "Sprint de Skipping con Elevación Aislada de Cadera", 
+                    desc: "Mueve los pies a máxima frecuencia llevando las rodillas alto y manteniendo el torso erguido durante 10 segundos en pasillo o patio.", 
+                    cat: "Mecánica de Carrera", 
+                    howTo: "CÓMO FUNCIONA: Corrige la postura del torso y la flexión de cadera requeridas para la velocidad punta (Top Speed)." 
+                },
+                { 
+                    name: "Intervalos de Alta Intensidad en el Sitio (HIIT 15/15)", 
+                    desc: "15 segundos de skipping y braceo a máxima velocidad absoluta + 15 segundos de trote suave en el sitio. Repetir 10 bloques.", 
+                    cat: "Resistencia al Sprint", 
+                    howTo: "CÓMO FUNCIONA: Eleva la capacidad lactácida para mantener la intensidad durante los 90 minutos del partido." 
+                },
+                { 
+                    name: "Frenada Seca en 2 Pasos y Reversa (Deceleration Drill)", 
+                    desc: "Corre a 80% de velocidad durante 4 metros, frena en seco bajando la cadera en 2 pasos cortos y retrocede rápidamente 3 metros.", 
+                    cat: "Capacidad de Desaceleración", 
+                    howTo: "CÓMO FUNCIONA: Entrena los excéntricos del isquiotibial para frenar sin lesionarte y volver a arrancar." 
+                },
+                { 
+                    name: "Zancadas de Velocidad con Extensión Posterior Completa", 
+                    desc: "Da zancadas muy amplias y rápidas impulsando con la punta del pie trasero para sentir la extensión completa del glúteo.", 
+                    cat: "Amplitud de Zancada", 
+                    howTo: "CÓMO FUNCIONA: Aumenta la distancia recorrida en cada paso durante la carrera a máxima velocidad." 
+                },
+                { 
+                    name: "Trote de Recuperación Activa con Saltos de Cabezazo", 
+                    desc: "Trote suave de 20 segundos y al conteo realizar un salto vertical máximo simular golpear un balón con la cabeza.", 
+                    cat: "Intermitente Específico", 
+                    howTo: "CÓMO FUNCIONA: Combina la resistencia aeróbica con acciones explosivas de salto verticales." 
+                },
+                { 
+                    name: "Skipping 'A' Drill Mecánico (Técnica de Zancada)", 
+                    desc: "Sube la rodilla a 90°, baja el pie atacando el suelo justo debajo de tu cadera. Hazlo con ritmo fluido e intenso.", 
+                    cat: "Técnica de Atletismo", 
+                    howTo: "CÓMO FUNCIONA: Optimiza el punto de contacto del pie para no frenarte al correr a máxima velocidad." 
+                },
+                { 
+                    name: "Carrera Lateral Rápidas con Cambio de Frente", 
+                    desc: "Desplázate cruzando pies en pasos de baile (carioca) rápido a la derecha 4m, frena y hazlo a la izquierda.", 
+                    cat: "Movilidad de Cadera", 
+                    howTo: "CÓMO FUNCIONA: Mejora la agilidad de cadera para correr de lado manteniendo la visión del juego." 
+                },
+                { 
+                    name: "Sprints en Retroceso Corto + Giro Explosivo", 
+                    desc: "Corre de espaldas 3 metros rápido, toca el suelo con la mano, gira y corre de frente 4 metros.", 
+                    cat: "Cambio de Sentido", 
+                    howTo: "CÓMO FUNCIONA: Entrena la transición entre defender replegando y salir a cortar la jugada." 
+                },
+                { 
+                    name: "Sentadillas Isométricas en Pared (Wall Sit) + Sprint Inmediato", 
+                    desc: "Apoya la espalda en la pared formando 90° con las rodillas durante 30s. Al terminar, sal disparado en sprint 4 metros.", 
+                    cat: "Potencia bajo Fatiga", 
+                    howTo: "CÓMO FUNCIONA: Recrea la fatiga muscular en los minutos finales del partido y enseña a explotar aun cansado." 
+                },
+                { 
+                    name: "Paseos en Puntillas y Talones Pliométricos", 
+                    desc: "Rebota velozmente apoyando solo las puntas de los pies durante 30s sin doblar casi las rodillas.", 
+                    cat: "Rigidez del Tobillo (Stiffness)", 
+                    howTo: "CÓMO FUNCIONA: Convierte los tobillos en 'resortes' para perder menos tiempo apoyado en el suelo al correr." 
+                }
+            ],
+            regateAgilidad: [
+                { 
+                    name: "Toques Rápidos de Suela sobre Balón (Sole Taps)", 
+                    desc: "Con el balón estático, toca la parte superior del balón alternando la planta del pie derecho e izquierdo a máxima velocidad sin mover el balón.", 
+                    cat: "Coordinación Fina", 
+                    howTo: "CÓMO FUNCIONA: 4 series de 40s. Desarrolla el ritmo de pies y la sensibilidad en la planta para controlar el balón bajo presión." 
+                },
+                { 
+                    name: "Campanitas (Toques Internos) + Amague de Bicicleta Dinámica", 
+                    desc: "Pasa el balón de pie derecho a izquierdo rápidamente con la cara interna 4 veces y realiza una bicicleta rodeando el balón por fuera.", 
+                    cat: "Agilidad y Engaño", 
+                    howTo: "CÓMO FUNCIONA: Enseña a desequilibrar al rival combinando el control cercano con un amague corporal." 
+                },
+                { 
+                    name: "Slalom en 'Figura de 8' entre 2 Zapatillas u Objetos Caseros", 
+                    desc: "Coloca dos zapatillas a 1.5m de distancia. Conduce el balón formando un 8 usando el borde externo e interno de ambos pies.", 
+                    cat: "Control Fino en Espacio Reducido", 
+                    howTo: "CÓMO FUNCIONA: Obliga a realizar giros cerrados y mantener el balón pegado al pie para giros rápidos." 
+                },
+                { 
+                    name: "Croqueta Estilo Iniesta + Cambio de Dirección con Planta", 
+                    desc: "Pasa el balón rápidamente del pie derecho al izquierdo con el borde interno y frena inmediatamente arrastrando la planta.", 
+                    cat: "Regate de Perfil", 
+                    howTo: "CÓMO FUNCIONA: Es la maniobra clásica para eludir la pierna del rival cuando se lanza a quitar la pelota." 
+                },
+                { 
+                    name: "Fagocitado / Amague de L (L-Drag Back)", 
+                    desc: "Arrastra el balón hacia atrás con la planta del pie y con el mismo pie o la cara interna pásalo por detrás de la pierna de apoyo.", 
+                    cat: "Salida de Presión", 
+                    howTo: "CÓMO FUNCIONA: Excelente regate para salir hacia un lado cuando tienes a un defensa pegado a la espalda." 
+                },
+                { 
+                    name: "Bicicleta Doble con Freno y Salida Explosiva", 
+                    desc: "Pasa la pierna derecha de adentro hacia afuera sobre el balón, luego la izquierda y sale con el borde externo de la derecha.", 
+                    cat: "Desequilibrio 1v1", 
+                    howTo: "CÓMO FUNCIONA: Congela al marcador haciéndole dudar sobre hacia qué lado te vas a escapar." 
+                },
+                { 
+                    name: "Giro Cruyff (Cruyff Turn) con Freno y Re-Orientación", 
+                    desc: "Amaga con patear o pasar el balón, pero engancha el balón con el borde interno por detrás de tu pierna de apoyo girando 180°.", 
+                    cat: "Cambio de Sentido de Juego", 
+                    howTo: "CÓMO FUNCIONA: Permite desmarcarte instantáneamente cuando un rival viene en carrera a interceptarte." 
+                },
+                { 
+                    name: "Autopase Corto y Freno con la Planta (Roll & Stop)", 
+                    desc: "Rueda el balón hacia un lado con la planta del pie y frénalo en seco con la cara interna o la planta del otro pie.", 
+                    cat: "Dominio de la Planta", 
+                    howTo: "CÓMO FUNCIONA: Cambia el ritmo del balón para hacer que el defensa pise en falso y atacarle el espacio libre." 
+                },
+                { 
+                    name: "Elástica Corta de Ronaldinho (Espacio Reducido)", 
+                    desc: "Con el borde externo empuja suavemente el balón hacia afuera y rápidamente con el mismo pie usa el borde interno para llevarlo adentro.", 
+                    cat: "Regate Élite", 
+                    howTo: "CÓMO FUNCIONA: Movimiento súper engañoso de tobillo para descolocar al rival en un mano a mano." 
+                },
+                { 
+                    name: "Control Orientado de Espaldas con Amague Corporal", 
+                    desc: "Lanza el balón suave hacia la pared, al recibir amaga ir a la izquierda con los hombros y arrastra el balón a la derecha con la planta.", 
+                    cat: "Recepción y Finta", 
+                    howTo: "CÓMO FUNCIONA: Entrena el primer toque desmarcador cuando recibes de espaldas a la portería." 
+                }
+            ],
+            recuperacion: [
+                { 
+                    name: "Movilidad Articular Dinámica de Cadera (90/90 Seated)", 
+                    desc: "Siéntate en el suelo con ambas piernas dobladas a 90°. Rota la cadera pasando las rodillas de un lado al otro sin despegar los talones.", 
+                    cat: "Prevención de Lesiones", 
+                    howTo: "CÓMO FUNCIONA: Libera la tensión en la articulación coxofemoral para prevenir sobrecargas en pubis y aductores." 
+                },
+                { 
+                    name: "Plancha Abdominal Anti-Rotación con Toque de Hombros", 
+                    desc: "En posición de flexión de brazos, toca tu hombro izquierdo con la mano derecha sin balancear ni girar la cadera.", 
+                    cat: "Estabilidad del Core", 
+                    howTo: "CÓMO FUNCIONA: 3 rondas x 12 toques. Te da estabilidad al chocar o forcejear hombro a hombro en la cancha." 
+                },
+                { 
+                    name: "Plancha Lateral Dinámica con Elevación de Cadera", 
+                    desc: "Apóyate sobre un antebrazo de lado. Eleva la cadera hasta alinear la columna con las piernas y baja suavemente.", 
+                    cat: "Fortalecimiento de Oblicuos", 
+                    howTo: "CÓMO FUNCIONA: Refuerza la cadena lateral para soportar cambios de dirección agresivos sin lastimarte la espalda." 
+                },
+                { 
+                    name: "Estiramiento Dinámico de Isquiotibiales (Caminata de Gusano / Inchworm)", 
+                    desc: "De pie, dobla el torso hasta tocar el suelo con las manos. Camina con las manos hasta quedar en plancha y luego camina con los pies hacia las manos.", 
+                    cat: "Flexibilidad Dinámica", 
+                    howTo: "CÓMO FUNCIONA: Alarga la cadena posterior y alivia la rigidez tras sesiones de sprints." 
+                },
+                { 
+                    name: "Puente de Glúteo Unipodal (Single Leg Glute Bridge)", 
+                    desc: "Acostado boca arriba con rodillas dobladas, eleva una pierna al aire. Empuja el suelo con el talón opuesto elevando la cadera.", 
+                    cat: "Activación Posterior", 
+                    howTo: "CÓMO FUNCIONA: Activa el glúteo mayor, músculo principal encargado de impulsar tus carreras y saltos." 
+                },
+                { 
+                    name: "Descompresión Lumbar en Posición de Niño (Child's Pose)", 
+                    desc: "Arrodíllate en el suelo, apoya los glúteos sobre los talones y extiende los brazos hacia adelante pegando la frente al piso.", 
+                    cat: "Relajación y Movilidad", 
+                    howTo: "CÓMO FUNCIONA: Libera la compresión acumulada en las vértebras lumbares por los impactos del entrenamiento." 
+                }
+            ]
+        };
+
+        const baseRoutine = [
+            { day: 1, title: "Aceleración Explosiva & Primer Paso", type: "aceleracion", exercises: [0, 1, 2, 3] },
+            { day: 2, title: "Agilidad, Toques Fieles & Regate Corto con Balón", type: "regateAgilidad", exercises: [0, 1, 2, 3] },
+            { day: 3, title: "Potencia e Intensidad Cardio en Espacio Reducido", type: "topSpeed", exercises: [0, 1, 2, 3] },
+            { day: 4, title: "Recuperación Activa, Core & Movilidad", type: "recuperacion", exercises: [0, 1, 2] },
+            { day: 5, title: "Pliometría & Salidas Rápidas", type: "aceleracion", exercises: [4, 5, 6, 7] },
+            { day: 6, title: "Coordinación, Amagues & Control Fino de Balón", type: "regateAgilidad", exercises: [4, 5, 6, 7] },
+            { day: 7, title: "Descanso Total / Preparación Mental", type: "recuperacion", exercises: [] }
+        ];
+
+        let appData = {
+            user: null,
+            currentDay: 1,
+            completedExercises: {},
+            customSubstitutions: {}
+        };
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const saved = localStorage.getItem('futfit_data');
+            if (saved) {
+                appData = JSON.parse(saved);
+                document.getElementById('onboardingModal').classList.add('hidden');
+                initApp();
+            } else {
+                document.getElementById('onboardingModal').classList.remove('hidden');
+            }
+
+            document.getElementById('profileForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                appData.user = {
+                    name: document.getElementById('fieldName').value.trim(),
+                    weight: document.getElementById('fieldWeight').value,
+                    height: document.getElementById('fieldHeight').value,
+                    position: document.getElementById('fieldPosition').value,
+                    level: document.getElementById('fieldLevel').value
+                };
+                saveState();
+                document.getElementById('onboardingModal').classList.add('hidden');
+                initApp();
+            });
+        });
+
+        function openSettings() {
+            if (!appData.user) return;
+            document.getElementById('fieldName').value = appData.user.name || '';
+            document.getElementById('fieldWeight').value = appData.user.weight || '';
+            document.getElementById('fieldHeight').value = appData.user.height || '';
+            document.getElementById('fieldPosition').value = appData.user.position || '';
+            document.getElementById('fieldLevel').value = appData.user.level || '';
+            document.getElementById('onboardingModal').classList.remove('hidden');
+        }
+
+        function resetData() {
+            if (confirm("¿Estás seguro de restablecer todos tus datos de perfil y progreso acumulado?")) {
+                localStorage.removeItem('futfit_data');
+                location.reload();
+            }
+        }
+
+        function resetWeek() {
+            if (confirm("¿Deseas reiniciar el progreso de la semana? Se mantendrán tus datos personales e intactos.")) {
+                appData.completedExercises = {};
+                saveState();
+                initApp();
+            }
+        }
+
+        function initApp() {
+            renderHeader();
+            renderDaysNav();
+            renderDayContent(appData.currentDay);
+            updateOverallProgress();
+        }
+
+        function renderHeader() {
+            const user = appData.user;
+            document.getElementById('welcomeTitle').innerText = `¡Hola, ${user.name}!`;
+            document.getElementById('userSubtitle').innerHTML = `Posición: <span class="text-slate-200 font-semibold">${user.position}</span> &bull; Nivel: <span class="text-accentGreen font-semibold">${user.level}</span> (${user.weight}kg / ${user.height}cm)`;
+        }
+
+        function renderDaysNav() {
+            const nav = document.getElementById('daysNav');
+            nav.innerHTML = '';
+            baseRoutine.forEach(d => {
+                const isActive = d.day === appData.currentDay;
+                const btn = document.createElement('button');
+                btn.className = `py-3 px-2 rounded-xl text-xs font-bold transition flex flex-col items-center justify-center border ${isActive ? 'bg-emerald-600 border-emerald-500 text-black shadow-lg shadow-emerald-600/20' : 'bg-slate-900 border-slate-800 text-slate-300 hover:border-slate-700'}`;
+                btn.innerHTML = `<span>Día ${d.day}</span><span class="text-[10px] font-normal opacity-80 mt-0.5">Semana 1</span>`;
+                btn.onclick = () => {
+                    appData.currentDay = d.day;
+                    saveState();
+                    renderDaysNav();
+                    renderDayContent(d.day);
+                };
+                nav.appendChild(btn);
+            });
+        }
+
+        function renderDayContent(dayNum) {
+            const dayData = baseRoutine.find(d => d.day === dayNum);
+            document.getElementById('dayBadge').innerText = `Día ${dayData.day} de 7`;
+            document.getElementById('dayTitle').innerText = dayData.title;
+
+            const listContainer = document.getElementById('exerciseList');
+            listContainer.innerHTML = '';
+
+            if (dayData.exercises.length === 0) {
+                listContainer.innerHTML = `
+                    <div class="text-center py-12 text-slate-400">
+                        <i class="fa-solid fa-mug-hot text-4xl mb-3 text-accentGreen"></i>
+                        <p class="font-semibold">Día de Recuperación Total o Descanso</p>
+                        <p class="text-xs mt-1">Duerme al menos 8 horas, hidrátate correctamente y realiza estiramientos suaves si lo consideras necesario.</p>
+                    </div>
+                `;
+                updateDayProgress(0, 0);
+                return;
+            }
+
+            let totalExercises = dayData.exercises.length;
+            let completedCount = 0;
+
+            dayData.exercises.forEach((exIndex, idx) => {
+                const subKey = `${dayNum}-${idx}`;
+                let exercise;
+                if (appData.customSubstitutions[subKey]) {
+                    exercise = appData.customSubstitutions[subKey];
+                } else {
+                    const pool = exercisePools[dayData.type];
+                    exercise = pool[exIndex % pool.length];
+                }
+
+                const isChecked = !!appData.completedExercises[subKey];
+                if (isChecked) completedCount++;
+
+                const card = document.createElement('div');
+                card.className = `p-5 rounded-xl border transition flex flex-col gap-3 ${isChecked ? 'bg-slate-900/60 border-emerald-500/40 opacity-75' : 'bg-slate-900 border-slate-800 hover:border-slate-700'}`;
+                
+                card.innerHTML = `
+                    <div class="flex items-start gap-3">
+                        <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleExercise(${dayNum}, ${idx})" class="mt-1 w-5 h-5 accent-emerald-500 rounded cursor-pointer">
+                        <div class="flex-1">
+                            <div class="flex flex-wrap items-center justify-between gap-2">
+                                <span class="text-xs font-semibold px-2 py-0.5 rounded bg-slate-800 text-accentGreen">${exercise.cat}</span>
+                                <button onclick="changeExercise('${dayData.type}', ${dayNum}, ${idx})" class="text-xs text-slate-400 hover:text-accentGreen transition flex items-center gap-1">
+                                    <i class="fa-solid fa-rotate"></i> Cambiar por otro ejercicio
+                                </button>
+                            </div>
+                            <h4 class="font-bold text-base mt-2 ${isChecked ? 'line-through text-slate-400' : 'text-slate-100'}">${exercise.name}</h4>
+                        </div>
+                    </div>
+                    
+                    <!-- DESCRIPCIÓN Y CÓMO FUNCIONA -->
+                    <div class="bg-slate-950/70 p-3.5 rounded-lg border border-slate-800/80 text-xs space-y-2 ml-8">
+                        <div>
+                            <span class="font-semibold text-slate-300 uppercase tracking-wider text-[10px] block text-accentGreen">Ejecución del Ejercicio:</span>
+                            <p class="text-slate-300 mt-0.5 leading-relaxed">${exercise.desc}</p>
+                        </div>
+                        <div class="pt-1.5 border-t border-slate-800/60">
+                            <span class="font-semibold text-emerald-400 uppercase tracking-wider text-[10px] block">${exercise.howTo.split(':')[0]}:</span>
+                            <p class="text-slate-400 mt-0.5 leading-relaxed">${exercise.howTo.split(':')[1]}</p>
+                        </div>
+                    </div>
+                `;
+                listContainer.appendChild(card);
+            });
+
+            updateDayProgress(completedCount, totalExercises);
+        }
+
+        function toggleExercise(dayNum, idx) {
+            const subKey = `${dayNum}-${idx}`;
+            appData.completedExercises[subKey] = !appData.completedExercises[subKey];
+            saveState();
+            renderDayContent(dayNum);
+            updateOverallProgress();
+        }
+
+        function changeExercise(poolType, dayNum, idx) {
+            const pool = exercisePools[poolType];
+            const subKey = `${dayNum}-${idx}`;
+            const randomEx = pool[Math.floor(Math.random() * pool.length)];
+            appData.customSubstitutions[subKey] = randomEx;
+            appData.completedExercises[subKey] = false;
+            saveState();
+            renderDayContent(dayNum);
+            updateOverallProgress();
+        }
+
+        function updateDayProgress(completed, total) {
+            const counter = document.getElementById('completionCounter');
+            const bar = document.getElementById('progressBar');
+            counter.innerText = `${completed}/${total} completados`;
+            const percentage = total === 0 ? 0 : Math.round((completed / total) * 100);
+            bar.style.width = `${percentage}%`;
+        }
+
+        function updateOverallProgress() {
+            let totalWeekExercises = 0;
+            let totalWeekCompleted = 0;
+
+            baseRoutine.forEach(day => {
+                day.exercises.forEach((_, idx) => {
+                    totalWeekExercises++;
+                    const subKey = `${day.day}-${idx}`;
+                    if (appData.completedExercises[subKey]) {
+                        totalWeekCompleted++;
+                    }
+                });
+            });
+
+            const overallPercent = totalWeekExercises === 0 ? 0 : Math.round((totalWeekCompleted / totalWeekExercises) * 100);
+            document.getElementById('overallPercentage').innerText = `${overallPercent}% Completado`;
+            document.getElementById('overallProgressBar').style.width = `${overallPercent}%`;
+        }
+
+        function saveState() {
+            localStorage.setItem('futfit_data', JSON.stringify(appData));
+        }
+    </script>
+</body>
+</html>
